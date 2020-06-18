@@ -23,6 +23,7 @@ func main() {
 	repository.SetDB(db)
 	e.GET("/", handler.Index)
 	e.GET("/:id", handler.Show)
+	e.POST("/", handler.MemoCreate)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
