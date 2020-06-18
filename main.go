@@ -1,22 +1,44 @@
 package main
 
 import (
-	"net/http"
+	"log"
+	"os"
 
-	"github.com/flosch/pongo2"
+	"memoapp/handler"
+	"memoapp/repository"
 
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-const tmplPath = "src/view"
+// const tmplPath = "src/view"
 
+var db *sqlx.DB
 var e = createMux()
 
 func main() {
-	e.GET("/", Index)
+	db = connectDB()
+	repository.SetDB(db)
+	e.GET("/", handler.Index)
+	e.GET("/:id", handler.Show)
+	e.POST("/", handler.MemoCreate)
 
 	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func connectDB() *sqlx.DB {
+	dsn := os.Getenv("DSN")
+	db, err := sqlx.Open("mysql", dsn)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	if err := db.Ping(); err != nil {
+		e.Logger.Fatal(err)
+	}
+	log.Println("データベースに接続しました")
+	return db
 }
 
 func createMux() *echo.Echo {
@@ -26,24 +48,7 @@ func createMux() *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Gzip())
 
+	e.Static("/styles", "src/styles")
+
 	return e
-}
-
-func Index(c echo.Context) error {
-	data := map[string]interface{}{
-		"Message": "test",
-	}
-	return render(c, "src/views/index.html", data)
-}
-
-func htmlBlob(file string, data map[string]interface{}) ([]byte, error) {
-	return pongo2.Must(pongo2.FromCache(file)).ExecuteBytes(data)
-}
-
-func render(c echo.Context, file string, data map[string]interface{}) error {
-	b, err := htmlBlob(file, data)
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	return c.HTMLBlob(http.StatusOK, b)
 }
