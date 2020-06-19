@@ -1,7 +1,6 @@
 package model
 
 type Memo struct {
-	ID      int    `db:"id" form:"id"`
-	Title   string `db:"title" form:"title"`
-	Content string `db:"content" form:"content"`
+	ID   int    `db:"id" form:"id"`
+	Memo string `db:"memo" form:"memo"`
 }
