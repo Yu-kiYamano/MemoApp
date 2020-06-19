@@ -21,9 +21,9 @@ var e = createMux()
 func main() {
 	db = connectDB()
 	repository.SetDB(db)
-	e.GET("/", handler.Index)
-	e.GET("/:id", handler.Show)
 	e.POST("/", handler.MemoCreate)
+	e.GET("/", handler.MemoIndex)
+	e.DELETE("/:id", handler.MemoDelete)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

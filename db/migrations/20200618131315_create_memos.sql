@@ -3,7 +3,7 @@
 -- SQL in section 'Up' is executed when this migration is applied
 CREATE TABLE memos (
     id int AUTO_INCREMENT,
-    title varchar(100),
+    memo varchar(100),
     PRIMARY KEY(id)
 );
 

@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"memoapp/model"
 	"memoapp/repository"
@@ -12,30 +11,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Index(c echo.Context) error {
-	//一覧を取得
-	memos, err := repository.MemoList()
+func MemoIndex(c echo.Context) error {
+
+	memos, err := repository.MemoListByCursor(0)
+
 	if err != nil {
-		log.Println(err.Error())
+
+		c.Logger().Error(err.Error())
+
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	data := map[string]interface{}{
-		"Message": "Indexページ",
-		"Now":     time.Now(),
-		"memos":   memos, // テンプレートエンジンに渡す
+		"Memos": memos,
 	}
-	return render(c, "src/views/index.html", data)
-}
 
-func Show(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-	data := map[string]interface{}{
-		"Message": "Showページ",
-		"Now":     time.Now(),
-		"id":      id,
-	}
-	return render(c, "src/views/show.html", data)
+	return render(c, "src/views/index.html", data)
 }
 
 type MemoCreateOutput struct {
@@ -50,13 +41,16 @@ func MemoCreate(c echo.Context) error {
 	var out MemoCreateOutput
 
 	if err := c.Bind(&memo); err != nil {
+
 		c.Logger().Error(err.Error())
 
 		return c.JSON(http.StatusBadRequest, out)
+
 	}
 
 	res, err := repository.MemoCreate(&memo)
 	if err != nil {
+
 		c.Logger().Error(err.Error())
 
 		return c.JSON(http.StatusInternalServerError, out)
@@ -65,7 +59,19 @@ func MemoCreate(c echo.Context) error {
 	id, _ := res.LastInsertId()
 
 	memo.ID = int(id)
+
 	out.Memo = &memo
 
 	return c.JSON(http.StatusOK, out)
+}
+
+//削除機能
+func MemoDelete(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	if err := repository.MemoDelete(id); err != nil {
+		c.Logger().Error(err.Error())
+		return c.JSON(http.StatusInternalServerError, "")
+	}
+	return c.JSON(http.StatusOK, fmt.Sprintf("Memo %d is deleted", id))
 }
