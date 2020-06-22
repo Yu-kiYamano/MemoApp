@@ -2,62 +2,52 @@ package repository
 
 import (
 	"database/sql"
-	"math"
 
 	"memoapp/model"
+
+	"github.com/labstack/echo/v4"
 )
 
-func MemoCreate(memo *model.Memo) (sql.Result, error) {
-
-	query := `INSERT INTO memos (memo)
-	VALUES (:memo);`
-
-	tx := db.MustBegin()
-
-	res, err := tx.NamedExec(query, memo)
+func MemoCreate(c echo.Context, memo *model.Memo) (sql.Result, error) {
+	query := `INSERT INTO memos (memo) VALUES (:memo);`
+	tx, err := db.Beginx()
 	if err != nil {
-
-		tx.Rollback()
-
+		c.Logger.Errorf(" : %v\n", err) //書き換える
 		return nil, err
 	}
-
+	res, err := tx.NamedExec(query, memo)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
 	tx.Commit()
-
 	return res, nil
 }
 
-func MemoListByCursor(cursor int) ([]*model.Memo, error) {
+func Getmemo() ([]*model.Memo, error) {
 
-	if cursor <= 0 {
-		cursor = math.MaxInt32
-	}
+	query := `SELECT *FROM memos`
+	memos := make([]*model.Memo, 0)
+	err := db.Select(&memos, query, cursor)
 
-	query := `SELECT *
-	FROM memos
-	WHERE id < ?
-	ORDER BY id desc
-	LIMIT 10`
-
-	memos := make([]*model.Memo, 0, 10)
-
-	if err := db.Select(&memos, query, cursor); err != nil {
+	if err != nil {
 		return nil, err
 	}
-
 	return memos, nil
 }
 
 func MemoDelete(id int) error {
 	query := "DELETE FROM memos WHERE id = ?"
-
-	tx := db.MustBegin()
-
-	if _, err := tx.Exec(query, id); err != nil {
-		tx.Rollback()
-
-		return err
+	tx, err := db.Beginx()
+	if err != nil {
+		c.Logger.Errorf(" : %v\n", err) //書き換える
+		return nil, err
 	}
-
-	return tx.Commit()
+	res, err := tx.NamedExec(query, memo)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	tx.Commit()
+	return res, nil
 }

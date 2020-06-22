@@ -13,23 +13,17 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-// const tmplPath = "src/view"
-
 var db *sqlx.DB
-var e = createMux()
 
 func main() {
 	db = connectDB()
 	repository.SetDB(db)
-	e.POST("/", handler.MemoCreate)
-	e.GET("/", handler.MemoIndex)
-	e.DELETE("/:id", handler.MemoDelete)
-
-	e.Logger.Fatal(e.Start(":8080"))
+	startServer()
 }
 
 func connectDB() *sqlx.DB {
 	dsn := os.Getenv("DSN")
+	//sqlx.Connectを使っても良い
 	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
 		e.Logger.Fatal(err)
@@ -41,14 +35,16 @@ func connectDB() *sqlx.DB {
 	return db
 }
 
-func createMux() *echo.Echo {
+func startServer() *echo.Echo {
 	e := echo.New()
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	e.Use(middleware.Gzip())
 
-	e.Static("/styles", "src/styles")
-
+	e.POST("/", handler.MemoCreate)
+	e.GET("/", handler.MemoIndex)
+	e.DELETE("/:id", handler.MemoDelete)
+	e.Logger.Fatal(e.Start(":8080"))
 	return e
 }

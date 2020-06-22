@@ -11,67 +11,68 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type (
+	htmlData      map[string]interface{}
+	MemoAppOutput struct {
+		Memo    *model.Memo
+		Message string
+	}
+)
+
 func MemoIndex(c echo.Context) error {
-
-	memos, err := repository.MemoListByCursor(0)
-
+	memos, err := repository.Getmemo()
 	if err != nil {
-
-		c.Logger().Error(err.Error())
-
-		return c.NoContent(http.StatusInternalServerError)
+		c.Logger().Errorf("failed to select db request : %v\n", err)
+		return c.JSON(http.StatusInternalServerError,
+			MemoAppOutput{Message: "error"})
 	}
 
-	data := map[string]interface{}{
-		"Memos": memos,
-	}
-
-	return render(c, "src/views/index.html", data)
-}
-
-type MemoCreateOutput struct {
-	Memo             *model.Memo
-	Message          string
-	ValidationErrors []string
+	return render(c, "src/views/index.html", htmlData{"Memos": memos})
 }
 
 func MemoCreate(c echo.Context) error {
-	var memo model.Memo
+	var memo = &model.Memo{}
 
-	var out MemoCreateOutput
-
-	if err := c.Bind(&memo); err != nil {
-
-		c.Logger().Error(err.Error())
-
-		return c.JSON(http.StatusBadRequest, out)
-
-	}
-
-	res, err := repository.MemoCreate(&memo)
+	err := c.Bind(memo)
 	if err != nil {
-
-		c.Logger().Error(err.Error())
-
-		return c.JSON(http.StatusInternalServerError, out)
+		c.Logger().Errorf("failed to bind : %v\n", err)
+		return c.JSON(http.StatusBadRequest,
+			MemoAppOutput{Message: "error"})
 	}
 
-	id, _ := res.LastInsertId()
+	res, err := repository.MemoCreate(c, memo)
+	if err != nil {
+		c.Logger().Errorf("failed to create memo : %v\n", err)
+		return c.JSON(http.StatusInternalServerError,
+			MemoAppOutput{Message: "error"})
+	}
 
-	memo.ID = int(id)
+	id, err := res.LastInsertId()
+	if err != nil {
+		c.Logger().Errorf("failed to get ID : %v\n", err)
+		return c.JSON(http.StatusInternalServerError,
+			MemoAppOutput{Message: "error"})
+	}
 
-	out.Memo = &memo
-
-	return c.JSON(http.StatusOK, out)
+	memo.SetId(int(id))
+	// out.Memo = memo
+	return c.JSON(http.StatusOK,
+		MemoAppOutput{Message: "success"})
 }
 
 //削除機能
 func MemoDelete(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.Logger().Errorf("failed to delete memo : %v\n", err)
+		return c.JSON(http.StatusInternalServerError,
+			MemoAppOutput{Message: "error"})
+	}
 	if err := repository.MemoDelete(id); err != nil {
 		c.Logger().Error(err.Error())
-		return c.JSON(http.StatusInternalServerError, "")
+		return c.JSON(http.StatusBadRequest,
+			MemoAppOutput{Message: "error"})
 	}
-	return c.JSON(http.StatusOK, fmt.Sprintf("Memo %d is deleted", id))
+	return c.JSON(http.StatusOK,
+		fmt.Sprintf("Memo %d is deleted", id))
 }
