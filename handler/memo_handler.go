@@ -68,7 +68,7 @@ func MemoDelete(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError,
 			MemoAppOutput{Message: "error"})
 	}
-	if err := repository.MemoDelete(id); err != nil {
+	if err := repository.MemoDelete(c, id); err != nil {
 		c.Logger().Error(err.Error())
 		return c.JSON(http.StatusBadRequest,
 			MemoAppOutput{Message: "error"})

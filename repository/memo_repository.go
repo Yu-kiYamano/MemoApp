@@ -12,7 +12,8 @@ func MemoCreate(c echo.Context, memo *model.Memo) (sql.Result, error) {
 	query := `INSERT INTO memos (memo) VALUES (:memo);`
 	tx, err := db.Beginx()
 	if err != nil {
-		c.Logger.Errorf(" : %v\n", err) //書き換える
+		c.Logger().Errorf("トランザクションが開始されませんでした: %v\n", err) //書き換える
+
 		return nil, err
 	}
 	res, err := tx.NamedExec(query, memo)
@@ -28,7 +29,7 @@ func Getmemo() ([]*model.Memo, error) {
 
 	query := `SELECT *FROM memos`
 	memos := make([]*model.Memo, 0)
-	err := db.Select(&memos, query, cursor)
+	err := db.Select(&memos, query)
 
 	if err != nil {
 		return nil, err
@@ -36,18 +37,18 @@ func Getmemo() ([]*model.Memo, error) {
 	return memos, nil
 }
 
-func MemoDelete(id int) error {
+func MemoDelete(c echo.Context, id int) error {
 	query := "DELETE FROM memos WHERE id = ?"
 	tx, err := db.Beginx()
 	if err != nil {
-		c.Logger.Errorf(" : %v\n", err) //書き換える
-		return nil, err
+		c.Logger().Errorf("トランザクションが開始されませんでした: %v\n", err)
+		return err
 	}
-	res, err := tx.NamedExec(query, memo)
+	_, err = tx.Exec(query, id)
 	if err != nil {
 		tx.Rollback()
-		return nil, err
+		return err
 	}
 	tx.Commit()
-	return res, nil
+	return nil
 }
