@@ -13,7 +13,7 @@ import (
 
 //type 識別子　型　で宣言
 type (
-	htmlData      map[string]interface{}
+	htmlData      map[string]interface{} //表示用のhtmlに渡すデータ型を定義
 	MemoAppOutput struct {
 		Memo    *model.Memo
 		Message string
@@ -26,7 +26,7 @@ func MemoIndex(c echo.Context) error {
 	if err != nil {
 		c.Logger().Errorf("failed to select db request : %v\n", err)
 		return c.JSON(http.StatusInternalServerError,
-			MemoAppOutput{Message: "error"}) //JSONで返す理由:Messageを自由に設定する事ができるため
+			MemoAppOutput{Message: "メモが取得できませんでした"}) //構造体を渡すことによって、echoがJSONとして返す
 	}
 	//index.htmlを返す。
 	return render(c, "src/views/index.html", htmlData{"Memos": memos})
@@ -40,26 +40,26 @@ func MemoCreate(c echo.Context) error {
 	if err != nil {
 		c.Logger().Errorf("failed to bind : %v\n", err)
 		return c.JSON(http.StatusBadRequest,
-			MemoAppOutput{Message: "error"})
+			MemoAppOutput{Message: "BadRequest"})
 	}
 
 	res, err := repository.MemoCreate(c, memo) //repositoryを読み出して保存処理を実行
 	if err != nil {
 		c.Logger().Errorf("failed to create memo : %v\n", err)
 		return c.JSON(http.StatusInternalServerError, //サーバー内の処理でエラーが発生したら500エラーを返す
-			MemoAppOutput{Message: "error"})
+			MemoAppOutput{Message: "ServerError"})
 	}
 
 	id, err := res.LastInsertId() //SQL実行結果から作成されたレコードのIDを取得する
 	if err != nil {
 		c.Logger().Errorf("failed to get ID : %v\n", err)
 		return c.JSON(http.StatusInternalServerError,
-			MemoAppOutput{Message: "error"})
+			MemoAppOutput{Message: "ServerError"})
 	}
 
 	memo.SetId(int(id))
 	return c.JSON(http.StatusOK,
-		MemoAppOutput{Message: "success"})
+		MemoAppOutput{Memo: memo, Message: "CreateSuccess"})
 }
 
 //削除機能
@@ -69,13 +69,13 @@ func MemoDelete(c echo.Context) error {
 	if err != nil {
 		c.Logger().Errorf("failed to delete memo : %v\n", err)
 		return c.JSON(http.StatusInternalServerError,
-			MemoAppOutput{Message: "error"})
+			MemoAppOutput{Message: "ServerErrror"})
 	}
 	//repositoryのメモ削除機のをを呼び出す
 	if err := repository.MemoDelete(c, id); err != nil {
 		c.Logger().Error(err.Error())
 		return c.JSON(http.StatusBadRequest,
-			MemoAppOutput{Message: "error"})
+			MemoAppOutput{Message: "BadRequest"})
 	}
 	return c.JSON(http.StatusOK,
 		fmt.Sprintf("Memo %d is deleted", id))
