@@ -17,19 +17,19 @@ var db *sqlx.DB
 
 func main() {
 
-	startServer()
+	startServer() //サーバースタート
 }
 
 func startServer() *echo.Echo {
 
-	e := echo.New()
-	dsn := os.Getenv("DSN")
-	db, err := sqlx.Open("mysql", dsn)
+	e := echo.New()                    //echoインスタンス作成
+	dsn := os.Getenv("DSN")            //.envrcのDSNを取得してdsnに代入(dsnとはプログラム側が捜査対象のdbを指定するための識別子)
+	db, err := sqlx.Open("mysql", dsn) //("mysql"(ドライバ名),dsn(dsnの名前(26行目で定義))　*sql.DB(つまりdb)を返す )
 	repository.SetDB(db)
 	if err != nil {
 		e.Logger.Errorf("データベース接続に失敗しました。: %v\n", err)
 	}
-	if err := db.Ping(); err != nil {
+	if err := db.Ping(); err != nil { //Pingとは対処のコンピュータとネットワークで繋がっているかを確認する時に使うもの
 		e.Logger.Errorf("確認できません: %v\n", err)
 	}
 	log.Println("データベースに接続しました")
