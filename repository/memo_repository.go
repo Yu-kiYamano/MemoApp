@@ -2,62 +2,53 @@ package repository
 
 import (
 	"database/sql"
-	"math"
 
 	"memoapp/model"
+
+	"github.com/labstack/echo/v4"
 )
 
-func MemoCreate(memo *model.Memo) (sql.Result, error) {
-
-	query := `INSERT INTO memos (memo)
-	VALUES (:memo);`
-
-	tx := db.MustBegin()
-
-	res, err := tx.NamedExec(query, memo)
+func MemoCreate(c echo.Context, memo *model.Memo) (sql.Result, error) {
+	query := `INSERT INTO memos (memo) VALUES (:memo);` //queryにSQL文を代入
+	tx, err := db.Beginx()                              //トランザクション開始
 	if err != nil {
-
-		tx.Rollback()
+		c.Logger().Errorf("トランザクションが開始されませんでした: %v\n", err) //書き換える
 
 		return nil, err
 	}
-
-	tx.Commit()
-
-	return res, nil
+	res, err := tx.NamedExec(query, memo) //queryと構造体を引数に渡してSQLを実行
+	if err != nil {
+		tx.Rollback()   //エラーが発生した場合はロールバックする
+		return nil, err //エラー内容を返す
+	}
+	tx.Commit()     //成功した場合はコミット
+	return res, nil //SQLの実行結果を返す
 }
 
-func MemoListByCursor(cursor int) ([]*model.Memo, error) {
+func Getmemo() ([]*model.Memo, error) {
 
-	if cursor <= 0 {
-		cursor = math.MaxInt32
-	}
+	query := `SELECT *FROM memos`
+	memos := make([]*model.Memo, 0) //クエリ結果を格納するスライスを初期化(キャパシティを可変にする為にサイズは０)
+	err := db.Select(&memos, query) //クエリ結果を代入する変数とクエリを指定してqueryを実行
 
-	query := `SELECT *
-	FROM memos
-	WHERE id < ?
-	ORDER BY id desc
-	LIMIT 10`
-
-	memos := make([]*model.Memo, 0, 10)
-
-	if err := db.Select(&memos, query, cursor); err != nil {
+	if err != nil {
 		return nil, err
 	}
-
 	return memos, nil
 }
 
-func MemoDelete(id int) error {
+func MemoDelete(c echo.Context, id int) error {
 	query := "DELETE FROM memos WHERE id = ?"
-
-	tx := db.MustBegin()
-
-	if _, err := tx.Exec(query, id); err != nil {
-		tx.Rollback()
-
+	tx, err := db.Beginx() //トランザクション開始
+	if err != nil {
+		c.Logger().Errorf("トランザクションが開始されませんでした: %v\n", err)
 		return err
 	}
-
-	return tx.Commit()
+	_, err = tx.Exec(query, id) //クエリとパラメータ指定してSQLを実行
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+	return nil
 }
