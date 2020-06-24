@@ -16,7 +16,7 @@ func render(c echo.Context, file string, data map[string]interface{}) error {
 	b, err := htmlBlob(file, data) //htmlBlobを呼び出してfile(生成されたhtml)とバイトデータを受けとる
 
 	if err != nil {
-		return c.NoContent(http.StatusInternalServerError) //エラーが起きたらからのbodyとエラーコードを返す
+		return c.NoContent(http.StatusInternalServerError) //エラーが起きたら空ののbodyとエラーコードを返す
 	}
 	return c.HTMLBlob(http.StatusOK, b)
 }

@@ -12,7 +12,7 @@ func MemoCreate(c echo.Context, memo *model.Memo) (sql.Result, error) {
 	query := `INSERT INTO memos (memo) VALUES (:memo);` //queryにSQL文を代入
 	tx, err := db.Beginx()                              //トランザクション開始
 	if err != nil {
-		c.Logger().Errorf("トランザクションが開始されませんでした: %v\n", err) //書き換える
+		c.Logger().Errorf("トランザクションが開始されませんでした: %v\n", err)
 
 		return nil, err
 	}
@@ -28,8 +28,8 @@ func MemoCreate(c echo.Context, memo *model.Memo) (sql.Result, error) {
 func Getmemo() ([]*model.Memo, error) {
 
 	query := `SELECT *FROM memos`
-	memos := make([]*model.Memo, 0) //クエリ結果を格納するスライスを初期化(キャパシティを可変にする為にサイズは０)
-	err := db.Select(&memos, query) //クエリ結果を代入する変数とクエリを指定してqueryを実行
+	memos := make([]*model.Memo, 0) //クエリ結果を格納する空のスライスを用意
+	err := db.Select(&memos, query) //クエリ結果を代入するmemoのスライスとクエリを指定してqueryを実行
 
 	if err != nil {
 		return nil, err
