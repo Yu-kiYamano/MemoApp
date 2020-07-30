@@ -41,6 +41,7 @@ func (cache Cache) Close() error {
 }
 
 func (cache Cache) Set(c echo.Context, memo *model.Memo) (sql.Result, error) {
+
 	return nil, nil
 }
 
