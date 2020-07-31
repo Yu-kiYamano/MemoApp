@@ -22,7 +22,7 @@ type (
 
 //引数はc(echo.Context型) 戻り値の型はerror
 func MemoIndex(c echo.Context) error {
-	database, err := repository.ProvideMysql(c)
+	database, err := repository.ProvideDatabase(c)
 	if err != nil {
 		c.Logger().Errorf("failed to provide db instance : %v\n", err)
 		return c.JSON(http.StatusInternalServerError,
@@ -40,7 +40,7 @@ func MemoIndex(c echo.Context) error {
 
 //引数はc(echo.Context型) 戻り値の型はerror
 func MemoCreate(c echo.Context) error {
-	database, err := repository.ProvideMysql(c)
+	database, err := repository.ProvideDatabase(c)
 	if err != nil {
 		c.Logger().Errorf("failed to provide db instance : %v\n", err)
 		return c.JSON(http.StatusInternalServerError,
@@ -48,14 +48,14 @@ func MemoCreate(c echo.Context) error {
 	}
 	var memo = &model.Memo{} //memoを定義
 
-	err := c.Bind(memo) //フォームの内容を構造体に埋め込む
+	err = c.Bind(memo) //フォームの内容を構造体に埋め込む
 	if err != nil {
 		c.Logger().Errorf("failed to bind : %v\n", err)
 		return c.JSON(http.StatusBadRequest,
 			MemoAppOutput{Message: "BadRequest"})
 	}
 
-	res, err := database.MemoCreate(c, memo) //repositoryを読み出して保存処理を実行
+	res, err := database.Set(c, memo) //repositoryを読み出して保存処理を実行
 	if err != nil {
 		c.Logger().Errorf("failed to create memo : %v\n", err)
 		return c.JSON(http.StatusInternalServerError, //サーバー内の処理でエラーが発生したら500エラーを返す
@@ -76,7 +76,7 @@ func MemoCreate(c echo.Context) error {
 
 //削除機能
 func MemoDelete(c echo.Context) error {
-	database, err := repository.ProvideMysql(c)
+	database, err := repository.ProvideDatabase(c)
 	if err != nil {
 		c.Logger().Errorf("failed to provide db instance : %v\n", err)
 		return c.JSON(http.StatusInternalServerError,

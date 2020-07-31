@@ -31,7 +31,7 @@ func ProvieCache(c echo.Context) (Cache, error) {
 	}
 	log.Println("データベースに接続しました")
 
-	return Cache{}, nil
+	return Cache{db: db}, nil
 }
 
 func (cache Cache) Close() error {
