@@ -16,18 +16,17 @@ type Database interface {
 }
 
 func ProvideDatabase(c echo.Context) (Database, error) {
-	mysql, err := ProvideMysql(c)
-	if err != nil {
-		c.Logger().Errorf("failed to bind : %v\n", err)
-		return nil, err
-	}
-	cache, err := ProvieCache(c)
-	if err != nil {
-		c.Logger().Errorf("failed to bind : %v\n", err)
-		return nil, err
-	}
-	c.Logger().Print(cache)
-	c.Logger().Print(mysql)
-	return cache, nil
+	memo := &model.Memo{}
+	err := c.Bind(memo)
 
+	if err != nil {
+		c.Logger().Errorf("failed to bind : %v\n", err)
+		return nil, err
+	}
+
+	if memo.Memo == "cache" {
+		return ProvieCache(c)
+	} else {
+		return ProvideMysql(c)
+	}
 }

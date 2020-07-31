@@ -31,7 +31,7 @@ func ProvieCache(c echo.Context) (Cache, error) {
 	}
 	log.Println("データベースに接続しました")
 
-	return Cache{}, nil
+	return Cache{db: db}, nil
 }
 
 func (cache Cache) Close() error {
@@ -41,15 +41,28 @@ func (cache Cache) Close() error {
 }
 
 func (cache Cache) Set(c echo.Context, memo *model.Memo) (sql.Result, error) {
+	query := `INSERT INTO memos (memo) VALUES (:memo);` //queryにSQL文を代入
+	tx, err := cache.db.Beginx()                        //トランザクション開始
+	if err != nil {
+		c.Logger().Errorf("トランザクションが開始されませんでした: %v\n", err)
+
+		return nil, err
+	}
+	memo.Memo += "(キャッシュを取得しました。)"
+	res, err := tx.NamedExec(query, memo) //queryと構造体を引数に渡してSQLを実行
+	if err != nil {
+		tx.Rollback()   //エラーが発生した場合はロールバックする
+		return nil, err //エラー内容を返す
+	}
+	tx.Commit()     //成功した場合はコミット
+	return res, nil //SQLの実行結果を返す
+}
+
+func (cache Cache) Get() ([]*model.Memo, error) {
 
 	return nil, nil
 }
 
-func (m Cache) Get() ([]*model.Memo, error) {
-
-	return nil, nil
-}
-
-func (m Cache) Delete(c echo.Context, id int) error {
+func (cache Cache) Delete(c echo.Context, id int) error {
 	return nil
 }
