@@ -12,7 +12,7 @@ func htmlBlob(file string, data map[string]interface{}) ([]byte, error) { //テ�
 }
 
 //引数はc(echo.COntext型),file(string型),data(stringのmap) 返り値はerror
-func render(c echo.Context, file string, data map[string]interface{}) error {
+func Render(c echo.Context, file string, data map[string]interface{}) error {
 	b, err := htmlBlob(file, data) //htmlBlobを呼び出してfile(生成されたhtml)とバイトデータを受けとる
 
 	if err != nil {

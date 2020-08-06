@@ -37,7 +37,11 @@ func (m *memohandler) MemoIndex(c echo.Context) error {
 			MemoAppOutput{Message: "メモが取得できませんでした"}) //構造体を渡すことによって、echoがJSONとして返す
 	}
 	//index.htmlを返す。
-	return render(c, "src/views/index2.html", htmlData{"Memos": memos})
+	// return render(c, "src/views/index2.html", htmlData{"Memos": memos})
+	return c.JSON(http.StatusOK,
+		MemoAppOutput{
+			Results: memos,
+			Message: "取得OK"}) //構造体を渡すことによって、echoがJSONとして返す
 }
 
 //引数はc(echo.Context型) 戻り値の型はerror

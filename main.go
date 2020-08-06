@@ -2,6 +2,7 @@ package main
 
 import (
 	"memoapp/handler"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -31,9 +32,16 @@ func startServer() *echo.Echo {
 
 	// defer db.Close() //startServer関数が終了する際に実行されるようにする為、deferを記述
 
+	// echoログのフォーマット
+	logger := middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: logFormat(),
+		Output: os.Stdout,
+	})
+
 	hdlr := handler.ProvideMemohandler()
 	//middlewareを登録
 	e.Use(
+		logger,
 		middleware.Recover(), //パニックから回復させるためのmiddleware
 		middleware.Logger(),  //各HTTP リクエストに関する情報をログに記録するためのmiddleware
 		middleware.Gzip(),    //gzip圧縮スキームを使用してHTTPレスポンスを圧縮するためのmiddleware
@@ -41,9 +49,40 @@ func startServer() *echo.Echo {
 	)
 
 	e.POST("/", hdlr.MemoCreate)
-	e.GET("/", hdlr.MemoIndex)
+	e.GET("/list", hdlr.MemoIndex)
+
+	// インデックス画面を表示
+	e.GET("/", index)
+
 	e.DELETE("/:id", hdlr.MemoDelete)
 	e.Logger.Fatal(e.Start(":8080"))
 	return e
 
+}
+
+func index(c echo.Context) error {
+	return handler.Render(c, "src/views/index.html", nil)
+}
+
+func logFormat() string {
+	var format string
+	format += "\n[  echo ]"
+	format += "time:${time_rfc3339}\n"
+	format += "- method:${method}\t"
+	format += "status:${status}\n"
+	format += "- error:${error}\n"
+	format += "- path:${path}\t"
+	format += "uri:${uri}\t"
+	format += "host:${host}\t"
+	format += "remote_ip:${remote_ip}\n"
+	format += "- bytes_in:${bytes_in}\t"
+	format += "bytes_out:${bytes_out}\n"
+	format += "- latency:${latency}\t"
+	format += "latency_human:${latency_human}\n\n"
+	// format += "forwardedfor:${header:x-forwarded-for}\n"
+	// format += "referer:${referer}\n"
+	// format += "user_agent:${user_agent}\n"
+	// format += "request_id:${id}\n"
+
+	return format
 }
