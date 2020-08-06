@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"log"
 	"os"
 
@@ -40,21 +39,32 @@ func (m Mysql) Close() error {
 
 }
 
-func (m Mysql) Set(c echo.Context, memo *model.Memo) (sql.Result, error) {
+func (m Mysql) Set(c echo.Context, memo *model.Memo) error {
 	query := `INSERT INTO memos (memo) VALUES (:memo);` //queryにSQL文を代入
 	tx, err := m.db.Beginx()                            //トランザクション開始
 	if err != nil {
 		c.Logger().Errorf("トランザクションが開始されませんでした: %v\n", err)
 
-		return nil, err
+		return err
 	}
 	res, err := tx.NamedExec(query, memo) //queryと構造体を引数に渡してSQLを実行
 	if err != nil {
-		tx.Rollback()   //エラーが発生した場合はロールバックする
-		return nil, err //エラー内容を返す
+		tx.Rollback() //エラーが発生した場合はロールバックする
+		return err    //エラー内容を返す
 	}
-	tx.Commit()     //成功した場合はコミット
-	return res, nil //SQLの実行結果を返す
+	tx.Commit() //成功した場合はコミット
+
+	id, err := res.LastInsertId() //SQL実行結果から作成されたレコードのIDを取得する
+	//書き換える(mysqlだけのものにする)
+	if err != nil {
+		c.Logger().Errorf("failed to get ID : %v\n", err)
+		return err
+		// return c.JSON(http.StatusInternalServerError,
+		// 	MemoAppOutput{Message: "ServerError"}) //→handler
+	}
+	memo.SetId(int(id))
+	return nil //SQLの実行結果を返す
+
 }
 
 func (m Mysql) Get() ([]*model.Memo, error) {

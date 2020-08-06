@@ -31,16 +31,18 @@ func startServer() *echo.Echo {
 
 	// defer db.Close() //startServer関数が終了する際に実行されるようにする為、deferを記述
 
+	hdlr := handler.ProvideMemohandler()
 	//middlewareを登録
 	e.Use(
 		middleware.Recover(), //パニックから回復させるためのmiddleware
 		middleware.Logger(),  //各HTTP リクエストに関する情報をログに記録するためのmiddleware
 		middleware.Gzip(),    //gzip圧縮スキームを使用してHTTPレスポンスを圧縮するためのmiddleware
+		hdlr.CheckCache(),
 	)
 
-	e.POST("/", handler.MemoCreate)
-	e.GET("/", handler.MemoIndex)
-	e.DELETE("/:id", handler.MemoDelete)
+	e.POST("/", hdlr.MemoCreate)
+	e.GET("/", hdlr.MemoIndex)
+	e.DELETE("/:id", hdlr.MemoDelete)
 	e.Logger.Fatal(e.Start(":8080"))
 	return e
 

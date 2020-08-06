@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"memoapp/model"
 
 	"github.com/labstack/echo/v4"
@@ -9,10 +8,10 @@ import (
 
 type Database interface {
 	// Connect() Database
-	Set(echo.Context, *model.Memo) (sql.Result, error)
+	Set(echo.Context, *model.Memo) error
 	Get() ([]*model.Memo, error)
 	Delete(echo.Context, int) error
-	Close() error
+	// Close() error
 }
 
 func ProvideDatabase(c echo.Context) (Database, error) {
