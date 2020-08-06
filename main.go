@@ -60,6 +60,7 @@ func startServer() *echo.Echo {
 
 }
 
+// *********************追加*********************
 func index(c echo.Context) error {
 	return handler.Render(c, "src/views/index.html", nil)
 }
@@ -86,3 +87,5 @@ func logFormat() string {
 
 	return format
 }
+
+// *********************追加*********************

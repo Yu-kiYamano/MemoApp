@@ -18,7 +18,6 @@ func (m *memohandler) CheckCache() echo.MiddlewareFunc {
 				c.Logger().Errorf("failed to bind : %v\n", err)
 				return err
 			}
-
 			if memo.Memo == "Usecache" {
 				cache, err := repository.ProvieCache(c)
 				if err != nil {
@@ -27,8 +26,10 @@ func (m *memohandler) CheckCache() echo.MiddlewareFunc {
 				}
 				ok := cache.Judge()
 				if ok {
+					log.Println("キャッシュにヒットしました")
 					m.db = cache
 				} else {
+					log.Println("キャッシュにヒットしませんでした")
 					mysql, err := repository.ProvideMysql(c)
 					if err != nil {
 						log.Println("MySqlインスタンスの取得に失敗しました")

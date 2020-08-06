@@ -36,12 +36,16 @@ func (m *memohandler) MemoIndex(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError,
 			MemoAppOutput{Message: "メモが取得できませんでした"}) //構造体を渡すことによって、echoがJSONとして返す
 	}
+	// *********************追加*********************
+
 	//index.htmlを返す。
 	// return render(c, "src/views/index2.html", htmlData{"Memos": memos})
 	return c.JSON(http.StatusOK,
 		MemoAppOutput{
 			Results: memos,
 			Message: "取得OK"}) //構造体を渡すことによって、echoがJSONとして返す
+	// *********************追加*********************
+
 }
 
 //引数はc(echo.Context型) 戻り値の型はerror
@@ -80,6 +84,12 @@ func (m *memohandler) MemoDelete(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest,
 			MemoAppOutput{Message: "BadRequest"})
 	}
+	// *********************追加*********************
+
 	return c.JSON(http.StatusOK,
-		fmt.Sprintf("Memo %d is deleted", id))
+		MemoAppOutput{
+			Message: fmt.Sprintf("Memo %d is deleted", id),
+			Results: []*model.Memo{&model.Memo{ID: id}}})
+	// *********************追加*********************
+
 }

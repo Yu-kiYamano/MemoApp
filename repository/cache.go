@@ -10,7 +10,15 @@ var LocalCache = map[string]interface{}{
 	"メモ一覧": []*model.Memo{
 		&model.Memo{
 			ID:   1,
-			Memo: "cacheMemo",
+			Memo: "cacheMemo1",
+		},
+		&model.Memo{
+			ID:   2,
+			Memo: "cacheMemo2",
+		},
+		&model.Memo{
+			ID:   3,
+			Memo: "cacheMemo3",
 		},
 	},
 }
