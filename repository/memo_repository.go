@@ -28,7 +28,7 @@ func ProvideMysql(c echo.Context) (Mysql, error) {
 		c.Logger().Errorf("確認できません: %v\n", err)
 		return Mysql{}, err
 	}
-	log.Println("データベースに接続しました")
+	log.Println("MySQLに接続しました")
 
 	return Mysql{db: db}, nil
 }

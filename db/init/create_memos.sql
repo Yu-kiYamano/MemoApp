@@ -8,10 +8,10 @@ CREATE TABLE memos
     (id)
 );
 
-    INSERT INTO memos
-        (memo)
-    values
-        ('ichigo.chocomint'),
-        ('banana.chocomint'),
-        ('pinapple.chocomint')
-;
+--     INSERT INTO memos
+--         (memo)
+--     values
+--         ('ichigo.chocomint'),
+--         ('banana.chocomint'),
+--         ('pinapple.chocomint')
+-- ;

@@ -48,7 +48,7 @@ func startServer() *echo.Echo {
 		hdlr.CheckCache(),
 	)
 
-	e.POST("/", hdlr.MemoCreate)
+	e.POST("/", hdlr.MemoCreate, hdlr.SetCache())
 	e.GET("/list", hdlr.MemoIndex)
 
 	// インデックス画面を表示
