@@ -84,12 +84,12 @@ func (m *memohandler) MemoDelete(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest,
 			MemoAppOutput{Message: "BadRequest"})
 	}
-	// *********************追加*********************
+	// *********************追加*********************st
 
 	return c.JSON(http.StatusOK,
 		MemoAppOutput{
 			Message: fmt.Sprintf("Memo %d is deleted", id),
 			Results: []*model.Memo{&model.Memo{ID: id}}})
-	// *********************追加*********************
+	// *********************追加*********************ed
 
 }
