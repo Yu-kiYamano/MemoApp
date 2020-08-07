@@ -1,26 +1,27 @@
 package repository
 
 import (
+	"log"
 	"memoapp/model"
 
 	"github.com/labstack/echo/v4"
 )
 
-var LocalCache = map[string]interface{}{
-	"メモ一覧": []*model.Memo{
-		&model.Memo{
-			ID:   1,
-			Memo: "cacheMemo1",
-		},
-		&model.Memo{
-			ID:   2,
-			Memo: "cacheMemo2",
-		},
-		&model.Memo{
-			ID:   3,
-			Memo: "cacheMemo3",
-		},
-	},
+var LocalCache = map[string][]*model.Memo{
+	// "メモ一覧": []*model.Memo{
+	// 	&model.Memo{
+	// 		ID:   1,
+	// 		Memo: "cacheMemo1",
+	// 	},
+	// 	&model.Memo{
+	// 		ID:   2,
+	// 		Memo: "cacheMemo2",
+	// 	},
+	// 	&model.Memo{
+	// 		ID:   3,
+	// 		Memo: "cacheMemo3",
+	// 	},
+	// },
 }
 
 type Cache struct {
@@ -40,7 +41,8 @@ func ProvieCache(c echo.Context) (Cache, error) {
 	// 	c.Logger().Errorf("確認できません: %v\n", err)
 	// 	return Cache{}, err
 	// }
-	// log.Println("データベースに接続しました")
+
+	log.Println("ローカルキャッシュに接続しました")
 
 	return Cache{}, nil
 }
@@ -52,13 +54,16 @@ func ProvieCache(c echo.Context) (Cache, error) {
 // }
 
 func (cache Cache) Set(c echo.Context, memo *model.Memo) error {
-	LocalCache["メモ一覧"] = memo
+	// LocalCache["メモ一覧"] = memo
+	getCache := LocalCache["メモ一覧"]
+	getCache = append(getCache, memo)
+	LocalCache["メモ一覧"] = getCache
 	return nil
 }
 
 func (cache Cache) Get() ([]*model.Memo, error) {
-	GetCache := LocalCache["メモ一覧"]
-	return GetCache.([]*model.Memo), nil
+	getCache := LocalCache["メモ一覧"]
+	return getCache, nil
 }
 
 func (cach Cache) Judge() bool {
